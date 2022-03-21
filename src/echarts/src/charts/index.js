@@ -24,7 +24,6 @@ const defaultOptions = {
 }
 
 function renderChart(widthParam, heightParam) {
-
     let chartConfig = Object.assign({}, defaultConfig);
 
     if (widthParam > 0 || heightParam > 0 ) {
