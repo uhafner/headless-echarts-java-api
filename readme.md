@@ -5,7 +5,7 @@ We are using Trireme, a "fake Node.js" instance to invoke a Node.js instance fro
 Apache ECharts is a JavaScript library used for visualizing a model as a chart. The Trireme Node instance hosts the chart
 as an SVG.
 
-The project is bundled into an executable JAR file using the Apache Maven Assembly Plugin, which allows us to bundle all dependencies at once.
+The project is bundled into an executable JAR file using the Apache Maven Assembly Plugin, which allows us to bundle all dependencies at once. Finally, the main class defined in the JAR file is executed using the `java` command.
 
 # How to run
 1. `mvn clean compile assembly:single`
