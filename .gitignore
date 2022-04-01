@@ -1,5 +1,8 @@
 .idea/
 
+#dynamic files
+config.json
+
 target/
 pom.xml.tag
 pom.xml.releaseBackup
