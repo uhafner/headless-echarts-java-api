@@ -1,13 +1,6 @@
-This is a Java project that executes a Node.js script to create an SVG file.
+This is a Java project that receives chart configuration files as input to render them as SVG charts outputted as string.
 
-We are using Trireme, a "fake Node.js" instance to invoke a Node.js instance from the JVM.
+# Main libraries
+Apache ECharts is a JavaScript library and is used to create a chart based on the configuration files passed to it.
 
-
-Apache ECharts is a JavaScript library used for visualizing a model as a chart. The Trireme Node instance hosts the chart
-as an SVG.
-
-
-# How to run
-1. `npm install --g trireme`
-2. `mvn clean compile`
-3. Execute the main function inside `App.java`
+Trireme is a library used to invoke a Node.js instance embedded in the Java Runtime Environment (JVE). Trireme executes a JavaScript rendering file, where the ECharts library is used to create a chart.
