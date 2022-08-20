@@ -34,11 +34,14 @@ public class EChartsSvgRenderer {
      * @return SVG as string
      */
     public String createSvgString(String configOptions, String exportOptions) {
+        if ((configOptions == null || configOptions.isEmpty()) && (exportOptions == null || exportOptions.isEmpty())) {
+            throw new IllegalArgumentException("No parameters were provided");
+        }
         if (configOptions == null || configOptions.isEmpty()) {
-            throw new IllegalArgumentException("An invalid configuration options parameter was passed");
+            throw new IllegalArgumentException("Chart configuration options parameter is missing.");
         }
         if (exportOptions == null || exportOptions.isEmpty()) {
-            throw new IllegalArgumentException("An invalid export options parameter was passed");
+            throw new IllegalArgumentException("Chart export options parameter is missing.");
         }
 
         NodeScript echartsInstance;

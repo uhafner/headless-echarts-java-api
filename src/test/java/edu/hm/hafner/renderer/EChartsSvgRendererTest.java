@@ -17,17 +17,32 @@ public class EChartsSvgRendererTest extends ResourceTest {
     }
 
     /**
+     * Tests if the application will throw an IllegalArgumentException if no parameters were provided.
+     */
+    @Test
+    public void shouldThrowIllegalArgumentExceptionIfAllParamsAreEmpty() {
+        Throwable t = assertThrows(IllegalArgumentException.class, () -> {
+            EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
+            echartsSvgRenderer.createSvgString("", "");
+        });
+        String expectedMessage = "No parameters were provided";
+        String resultMessage = t.getMessage();
+
+        assertTrue(resultMessage.contains(expectedMessage));
+    }
+
+    /**
      * Tests if the application will throw an IllegalArgumentException if no chart config parameter was provided.
      */
     @Test
     public void shouldThrowIllegalArgumentExceptionIfChartConfigIsEmpty() {
-        Exception e = assertThrows(IllegalArgumentException.class, () -> {
+        Throwable t = assertThrows(IllegalArgumentException.class, () -> {
             EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
             String exportOptions = toString("export-options/export-stack.json");
             echartsSvgRenderer.createSvgString("", exportOptions);
         });
-        String expectedMessage = "An invalid configuration options parameter was passed";
-        String resultMessage = e.getMessage();
+        String expectedMessage = "Chart configuration options parameter is missing.";
+        String resultMessage = t.getMessage();
 
         assertTrue(resultMessage.contains(expectedMessage));
     }
@@ -37,13 +52,13 @@ public class EChartsSvgRendererTest extends ResourceTest {
      */
     @Test
     public void shouldThrowIllegalArgumentExceptionIfExportConfigIsEmpty() {
-        Exception e = assertThrows(IllegalArgumentException.class, () -> {
+        Throwable t = assertThrows(IllegalArgumentException.class, () -> {
             EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
             String configOptions = toString("configuration-options/bar-basic.json");
             echartsSvgRenderer.createSvgString(configOptions, "");
         });
-        String expectedMessage = "An invalid export options parameter was passed";
-        String resultMessage = e.getMessage();
+        String expectedMessage = "Chart export options parameter is missing.";
+        String resultMessage = t.getMessage();
 
         assertTrue(resultMessage.contains(expectedMessage));
     }
