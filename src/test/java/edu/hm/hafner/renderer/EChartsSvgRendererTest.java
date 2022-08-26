@@ -1,7 +1,10 @@
 package edu.hm.hafner.renderer;
 
 import edu.hm.hafner.util.ResourceTest;
+
 import org.junit.jupiter.api.Test;
+
+import org.xmlunit.builder.DiffBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -12,8 +15,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class EChartsSvgRendererTest extends ResourceTest {
 
-    private String formatStringOutput(String output) {
-        return output.replaceAll("\\s+","");
+    /**
+     * Converts a SVG provided by its file path to convert it to a string.
+     * @param filePath File path of SVG string
+     * @return SVG as string
+     */
+    private String convertSvgToString(String filePath) {
+        String svgString = toString(filePath);
+
+        if (!svgString.isEmpty()) {
+            return svgString.replace("\n", "");
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Compares two SVG strings if they are equal, while ignoring comments and whitespaces.
+     * @param testResultSvg SVG string produced by EChartsSvgRenderer
+     * @param expectedSvg SVG string equivalent to test result SVG
+     * @return Returns true if SVG strings are equal.
+     */
+    private boolean compareSvgs(String testResultSvg, String expectedSvg) {
+        return DiffBuilder.compare(testResultSvg).withTest(expectedSvg)
+                .ignoreComments()
+                .ignoreWhitespace()
+                .build()
+                .hasDifferences();
     }
 
     /**
@@ -38,7 +66,7 @@ public class EChartsSvgRendererTest extends ResourceTest {
     public void shouldThrowIllegalArgumentExceptionIfChartConfigIsEmpty() {
         Throwable t = assertThrows(IllegalArgumentException.class, () -> {
             EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
-            String exportOptions = toString("export-options/export-stack.json");
+            String exportOptions = toString("export-options/export-medium.json");
             echartsSvgRenderer.createSvgString("", exportOptions);
         });
         String expectedMessage = "Chart configuration options parameter is missing.";
@@ -68,20 +96,13 @@ public class EChartsSvgRendererTest extends ResourceTest {
      */
     @Test
     public void shouldRenderBasicBarChart() {
+        String exportOptions = convertSvgToString("export-options/export-medium.json");
+        String configOptions = convertSvgToString("configuration-options/bar-basic.json");
         EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
-
-        String exportOptions = toString("export-options/export-stack.json");
-        String configOptions = toString("configuration-options/bar-basic.json");
-        exportOptions = exportOptions.replace("\n", "");
-        configOptions = configOptions.replace("\n", "");
-
         String result = echartsSvgRenderer.createSvgString(configOptions, exportOptions);
-        result = formatStringOutput(result);
 
         String isExpectedResult = toString("screenshots/bar-basic.svg");
-        isExpectedResult = formatStringOutput(isExpectedResult);
-
-        assertThat(result).isEqualTo(isExpectedResult);
+        assertThat(compareSvgs(result, isExpectedResult)).isFalse();
     }
 
     /**
@@ -89,19 +110,12 @@ public class EChartsSvgRendererTest extends ResourceTest {
      */
     @Test
     public void shouldRenderStackedBarChart() {
+        String exportOptions = convertSvgToString("export-options/export-large.json");
+        String configOptions = convertSvgToString("configuration-options/bar-stack.json");
         EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
-
-        String exportOptions = toString("export-options/export-basic.json");
-        String configOptions = toString("configuration-options/bar-stack.json");
-        exportOptions = exportOptions.replace("\n", "");
-        configOptions = configOptions.replace("\n", "");
-
         String result = echartsSvgRenderer.createSvgString(configOptions, exportOptions);
-        result = formatStringOutput(result);
 
         String isExpectedResult = toString("screenshots/bar-stack.svg");
-        isExpectedResult = formatStringOutput(isExpectedResult);
-
-        assertThat(result).isEqualTo(isExpectedResult);
+        assertThat(compareSvgs(result, isExpectedResult)).isFalse();
     }
 }
