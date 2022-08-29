@@ -2,6 +2,7 @@ package edu.hm.hafner.renderer;
 
 import edu.hm.hafner.util.ResourceTest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import org.xmlunit.builder.DiffBuilder;
@@ -16,21 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class EChartsSvgRendererTest extends ResourceTest {
 
     /**
-     * Converts a SVG provided by its file path to convert it to a string.
-     * @param filePath File path of SVG string
-     * @return SVG as string
-     */
-    private String convertSvgToString(String filePath) {
-        String svgString = toString(filePath);
-
-        if (!svgString.isEmpty()) {
-            return svgString.replace("\n", "");
-        } else {
-            return "";
-        }
-    }
-
-    /**
      * Compares two SVG strings if they are equal, while ignoring comments and whitespaces.
      * @param testResultSvg SVG string produced by EChartsSvgRenderer
      * @param expectedSvg SVG string equivalent to test result SVG
@@ -43,6 +29,10 @@ public class EChartsSvgRendererTest extends ResourceTest {
                 .build()
                 .hasDifferences();
     }
+
+    private final String chartConfigJson = toString("configuration-options/bar-basic.json");
+
+    private final String exportConfigJson = toString("export-options/medium.json");
 
     /**
      * Tests if the application will throw an IllegalArgumentException if no parameters were provided.
@@ -66,10 +56,9 @@ public class EChartsSvgRendererTest extends ResourceTest {
     public void shouldThrowIllegalArgumentExceptionIfChartConfigIsEmpty() {
         Throwable t = assertThrows(IllegalArgumentException.class, () -> {
             EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
-            String exportOptions = toString("export-options/export-medium.json");
-            echartsSvgRenderer.createSvgString("", exportOptions);
+            echartsSvgRenderer.createSvgString("", exportConfigJson);
         });
-        String expectedMessage = "Chart configuration options parameter is missing.";
+        String expectedMessage = "Chart configuration parameter is missing.";
         String resultMessage = t.getMessage();
 
         assertTrue(resultMessage.contains(expectedMessage));
@@ -82,10 +71,105 @@ public class EChartsSvgRendererTest extends ResourceTest {
     public void shouldThrowIllegalArgumentExceptionIfExportConfigIsEmpty() {
         Throwable t = assertThrows(IllegalArgumentException.class, () -> {
             EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
-            String configOptions = toString("configuration-options/bar-basic.json");
-            echartsSvgRenderer.createSvgString(configOptions, "");
+            echartsSvgRenderer.createSvgString(chartConfigJson, "");
         });
-        String expectedMessage = "Chart export options parameter is missing.";
+        String expectedMessage = "Export configuration parameter is missing.";
+        String resultMessage = t.getMessage();
+
+        assertTrue(resultMessage.contains(expectedMessage));
+    }
+
+    /**
+     * Tests if the application will throw an IllegalArgumentException if the chart config parameter has invalid JSON.
+     */
+    @Test
+    public void shouldThrowIllegalArgumentExceptionIfChartConfigHasInvalidJson() {
+        Throwable t = assertThrows(IllegalArgumentException.class, () -> {
+            EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
+            String invalidJson = StringUtils.replaceOnce(chartConfigJson, ":", "");
+            echartsSvgRenderer.createSvgString(invalidJson, exportConfigJson);
+        });
+        String expectedMessage = "Chart configuration parameter has invalid JSON.";
+        String resultMessage = t.getMessage();
+
+        assertTrue(resultMessage.contains(expectedMessage));
+    }
+
+    /**
+     * Tests if the application will throw an IllegalArgumentException if the export config parameter has invalid JSON.
+     */
+    @Test
+    public void shouldThrowIllegalArgumentExceptionIfExportConfigHasInvalidJson() {
+        Throwable t = assertThrows(IllegalArgumentException.class, () -> {
+            EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
+            String invalidJson = StringUtils.replaceOnce(exportConfigJson, ":", "");
+            echartsSvgRenderer.createSvgString(chartConfigJson, invalidJson);
+        });
+        String expectedMessage = "Export configuration parameter has invalid JSON.";
+        String resultMessage = t.getMessage();
+
+        assertTrue(resultMessage.contains(expectedMessage));
+    }
+
+    /**
+     * Tests if the application will throw an IllegalArgumentException if the chart config parameter is missing series
+     * key.
+     */
+    @Test
+    public void shouldThrowIllegalArgumentExceptionIfSeriesKeyMissing() {
+        Throwable t = assertThrows(IllegalArgumentException.class, () -> {
+            EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
+            echartsSvgRenderer.createSvgString(exportConfigJson, exportConfigJson);
+        });
+        String expectedMessage = "Series key missing in chart configuration parameter.";
+        String resultMessage = t.getMessage();
+
+        assertTrue(resultMessage.contains(expectedMessage));
+    }
+
+    /**
+     * Tests if the application will throw an IllegalArgumentException if the chart config parameter has an empty series
+     * value.
+     */
+    @Test
+    public void shouldThrowIllegalArgumentExceptionIfSeriesIsEmpty() {
+        Throwable t = assertThrows(IllegalArgumentException.class, () -> {
+            EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
+            String chartConfigJsonWithEmptySeries = toString("configuration-options/series-empty.json");
+            echartsSvgRenderer.createSvgString(chartConfigJsonWithEmptySeries, exportConfigJson);
+        });
+        String expectedMessage = "Invalid series value in the chart configuration parameter.";
+        String resultMessage = t.getMessage();
+
+        assertTrue(resultMessage.contains(expectedMessage));
+    }
+
+    /**
+     * Tests if the application will throw an IllegalArgumentException if the export config parameter is missing the
+     * width key.
+     */
+    @Test
+    public void shouldThrowIllegalArgumentExceptionIfWidthMissing() {
+        Throwable t = assertThrows(IllegalArgumentException.class, () -> {
+            EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
+            echartsSvgRenderer.createSvgString(chartConfigJson, chartConfigJson);
+        });
+        String expectedMessage = "Width and/or height missing in export configuration parameter.";
+        String resultMessage = t.getMessage();
+
+        assertTrue(resultMessage.contains(expectedMessage));
+    }
+
+    /**
+     * Tests if the application will throw an IllegalArgumentException if the export config parameter has width as 0.
+     */
+    @Test
+    public void shouldThrowIllegalArgumentExceptionIfWidthZero() {
+        Throwable t = assertThrows(IllegalArgumentException.class, () -> {
+            EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
+            echartsSvgRenderer.createSvgString(chartConfigJson, toString("export-options/invalid-width.json"));
+        });
+        String expectedMessage = "Invalid width and/or height values in export configuration parameter.";
         String resultMessage = t.getMessage();
 
         assertTrue(resultMessage.contains(expectedMessage));
@@ -96,8 +180,8 @@ public class EChartsSvgRendererTest extends ResourceTest {
      */
     @Test
     public void shouldRenderBasicBarChart() {
-        String exportOptions = convertSvgToString("export-options/export-medium.json");
-        String configOptions = convertSvgToString("configuration-options/bar-basic.json");
+        String exportOptions = toString("export-options/medium.json");
+        String configOptions = toString("configuration-options/bar-basic.json");
         EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
         String result = echartsSvgRenderer.createSvgString(configOptions, exportOptions);
 
@@ -110,8 +194,8 @@ public class EChartsSvgRendererTest extends ResourceTest {
      */
     @Test
     public void shouldRenderStackedBarChart() {
-        String exportOptions = convertSvgToString("export-options/export-large.json");
-        String configOptions = convertSvgToString("configuration-options/bar-stack.json");
+        String exportOptions = toString("export-options/large.json");
+        String configOptions = toString("configuration-options/bar-stack.json");
         EChartsSvgRenderer echartsSvgRenderer = new EChartsSvgRenderer();
         String result = echartsSvgRenderer.createSvgString(configOptions, exportOptions);
 

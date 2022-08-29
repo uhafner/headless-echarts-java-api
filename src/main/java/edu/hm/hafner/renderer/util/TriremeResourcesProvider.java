@@ -41,17 +41,15 @@ public class TriremeResourcesProvider {
      * @throws IOException Thrown in case creation of temp file or copying the InputStream fails.
      */
     public File copyJavaScriptFile(String filePath) throws IOException {
-        final InputStream inputStream = createInputStreamFromResource(filePath);
-
         final File tempFile = File.createTempFile("index", ".js");
         tempFile.deleteOnExit();
 
-        final FileOutputStream outputStream = new FileOutputStream(tempFile);
-
-        if (inputStream != null) {
-            IOUtils.copy(inputStream, outputStream);
-            LOG.info("Copied ECharts Javascript rendering file for usage by Trireme.");
+        final InputStream inputStream = createInputStreamFromResource(filePath);
+        if (inputStream == null) {
+            throw new IllegalStateException("Failed to retrieve JavaScript rendering file.");
         }
+        IOUtils.copy(inputStream, new FileOutputStream(tempFile));
+        LOG.info("Copied ECharts Javascript rendering file for usage by Trireme.");
 
         return tempFile;
     }
@@ -64,12 +62,12 @@ public class TriremeResourcesProvider {
         String tempDirectory = "";
 
         try {
-            Path tempDirectoryPath = Files.createTempDirectory("trireme");
+            final Path tempDirectoryPath = Files.createTempDirectory("trireme");
             if (tempDirectoryPath != null) {
                 tempDirectory = tempDirectoryPath.toString();
             }
         } catch (IOException e) {
-            LOG.error("Failed to a create temporary directory in the operating system", e);
+            throw new IllegalStateException("Failed to create temporary directory in the operating system.");
         }
         deleteTempDirectoryOnExit(tempDirectory);
 
@@ -89,7 +87,7 @@ public class TriremeResourcesProvider {
                 commaSeparatedPaths = new String(IOUtils.toByteArray(is), StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
-            LOG.error("Failed to parse file paths from node modules dependencies.", e);
+            throw new IllegalStateException("Failed to parse file paths from node modules dependencies.");
         }
 
         if (!commaSeparatedPaths.isEmpty()) {
@@ -108,7 +106,7 @@ public class TriremeResourcesProvider {
             try {
                 FileUtils.forceDeleteOnExit(new File(tempDirectory));
             } catch (IOException e) {
-                LOG.error("Failed to delete temp directory", e);
+                throw new IllegalStateException("Failed to mark temp directory for deletion");
             }
         }));
     }
@@ -134,7 +132,7 @@ public class TriremeResourcesProvider {
                             FileUtils.copyInputStreamToFile(fileStream, new File(fullTargetPathAsStr));
                         }
                     } catch (IOException e) {
-                        LOG.error("Failed to copy node modules dependencies", e);
+                        throw new IllegalStateException("Failed to copy node modules dependencies");
                     }
                 }
             }
